@@ -83,9 +83,9 @@ export default {
       this.isValid = !this.error
     },
     validatePhoneNumber() {
-      const regex = /^\+\d{1,3}\d{1,14}$/;
-      this.error = regex.test(this.user.phone) ? '' : 'Invalid phone number';
-      this.isValid = !this.error
+      let regex = /^\+?\d+(\(0\))?(x\d+)?$/;
+      this.isValid = regex.test(this.user.phone) && this.user.phone.length > 4 && this.user.phone.length < 16;
+      this.error = this.isValid ? '' : 'Invalid phone number, input only numbers and country code';
     },
     validateUsername() {
       const regex = /^[a-zA-Z0-9_.]+$/;

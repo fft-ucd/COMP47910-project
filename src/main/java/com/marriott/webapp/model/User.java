@@ -30,6 +30,7 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED, onConstructor = @__(@JsonCreator))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Setter
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type")
 public abstract class User {
@@ -81,7 +82,7 @@ public abstract class User {
 
     @Setter
     @Column(columnDefinition = "boolean default false")
-    protected Boolean inactive;
+    protected boolean inactive;
 
     @Embedded
     protected Contact contact;
@@ -97,6 +98,7 @@ public abstract class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     protected List<Reservation> reservations;
 
+    @Builder.Default
     protected Credentials credentials = new Credentials();
 
     abstract public String getType();

@@ -3,7 +3,7 @@ package com.marriott.webapp.api;
 import com.marriott.webapp.model.Room;
 import com.marriott.webapp.model.StarwoodMember;
 import com.marriott.webapp.service.AuthenticationFacade;
-import com.marriott.webapp.service.RoomResponse;
+import com.marriott.webapp.service.contracts.RoomResponse;
 import com.marriott.webapp.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

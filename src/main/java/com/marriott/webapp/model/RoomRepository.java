@@ -17,7 +17,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             "AND res.checkOutDate >= :startDate))")
     List<Room> findAvailableRooms(LocalDate startDate, LocalDate endDate);
 
-
     @Query("SELECT r FROM Room r WHERE r.capacity >= :capacity AND NOT EXISTS " +
             "(SELECT res FROM Reservation res " +
             "JOIN res.rooms ro " +

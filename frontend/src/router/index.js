@@ -2,11 +2,10 @@ import * as Router from 'vue-router';
 import Login from '../views/LoginView.vue';
 import Register from '../views/RegisterView.vue';
 import RoomList from '../views/RoomList.vue';
-import ReservationList from '../views/ReservationList.vue';
 import BookRoom from '../views/BookRoom.vue';
-import GuestReservation from '../views/GuestReservation.vue'
 import CreditCardRegister from '../views/CreditCardRegister.vue'
 import Unregister from '../views/UnregisterView.vue'
+import UpdateView from '../views/UpdateView.vue'
 
 const router = Router.createRouter({
   history: Router.createWebHistory(),
@@ -24,7 +23,18 @@ const router = Router.createRouter({
       {
         path: '/register',
         name: 'register',
-        component: Register
+        component: Register,
+        meta: {
+          requiresAuth: false
+        }
+      },
+      {
+        path: '/profile',
+        name: 'profile',
+        component: UpdateView,
+        meta: {
+          requiresAuth: true
+        }
       },
       {
         path: '/rooms',
@@ -40,9 +50,9 @@ const router = Router.createRouter({
         component: () => {
           const isLoggedIn = localStorage.getItem('authToken');
           if (isLoggedIn) {
-              return ReservationList
+            return import(/* webpackChunkName: "reservations" */ '@/views/ReservationList');
           } else {
-              return GuestReservation
+            return import(/* webpackChunkName: "guest-reservation" */ '@/views/GuestReservation');
           }
         }
       },

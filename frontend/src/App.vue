@@ -1,9 +1,11 @@
 <template>
   <div id="app">
     <nav>
-      <router-link to="/login">Login</router-link>
+      <router-link v-if="!isLoggedIn" to="/login">Login</router-link>
       |
-      <router-link to="/register">Register</router-link>
+      <router-link v-if="!isLoggedIn" to="/register">Register</router-link>
+      |
+      <router-link v-if="isLoggedIn" to="/profile">Update Profile</router-link>
       |
       <router-link to="/rooms">Rooms</router-link>
       |
@@ -13,9 +15,9 @@
       |
       <router-link v-if="isLoggedIn" to="/card-register">Manage Cards</router-link>
       |
-      <router-link v-if="isLoggedIn" to="" @click.capture="logout">Logout</router-link>
-      |
       <router-link v-if="isLoggedIn" to="/unregister">Unregister</router-link>
+      |
+      <router-link v-if="isLoggedIn" to="" @click.capture="logout">Logout</router-link>
     </nav>
     <router-view/>
   </div>

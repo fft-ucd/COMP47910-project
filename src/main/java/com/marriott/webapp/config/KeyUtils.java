@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -23,7 +23,6 @@ import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
 import java.util.Objects;
 
 @Component
@@ -65,19 +64,19 @@ public class KeyUtils {
     private KeyPair getKeyPair(String publicKeyPath, String privateKeyPath) {
         KeyPair keyPair;
 
-        File publicKeyFile = new File(publicKeyPath);
-        File privateKeyFile = new File(privateKeyPath);
+        var publicKeyFile = getResourceAsStream(publicKeyPath);
+        var privateKeyFile = getResourceAsStream(privateKeyPath);
 
-        if (publicKeyFile.exists() && privateKeyFile.exists()) {
+        if (publicKeyFile != null && privateKeyFile != null) {
             log.info("loading keys from file: {}, {}", publicKeyPath, privateKeyPath);
             try {
                 KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 
-                byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
+                byte[] publicKeyBytes = publicKeyFile.readAllBytes();
                 EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
                 PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 
-                byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
+                byte[] privateKeyBytes = privateKeyFile.readAllBytes();
                 PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
                 PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
 
@@ -86,13 +85,9 @@ public class KeyUtils {
             } catch (NoSuchAlgorithmException | IOException | InvalidKeySpecException e) {
                 throw new RuntimeException(e);
             }
-        } else {
-            if (Arrays.asList(environment.getActiveProfiles()).contains("prod")) {
-                throw new RuntimeException("public and private keys don't exist");
-            }
         }
 
-        File directory = new File("access-refresh-token-keys");
+        File directory = new File("/app/access-refresh-token-keys");
         if (!directory.exists()) {
             boolean tokensDirectory = directory.mkdirs();
 
@@ -119,6 +114,20 @@ public class KeyUtils {
         }
 
         return keyPair;
+    }
+
+    private InputStream getResourceAsStream(String path) {
+        try {
+            var resource = KeyUtils.class.getResourceAsStream(path);
+            if (resource != null) {
+                return resource;
+            } else {
+                return KeyUtils.class.getClassLoader().getResourceAsStream(path);
+            }
+        } catch (Exception e) {
+            log.error("Failed to load resource: {}", path, e);
+            return null;
+        }
     }
 
     public RSAPublicKey getAccessTokenPublicKey() {

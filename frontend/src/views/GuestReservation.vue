@@ -47,7 +47,7 @@
           <td>{{ reservation.startDate }}</td>
           <td>{{ reservation.endDate }}</td>
           <td>{{ reservation.status }}</td>
-          <td><button class="btn btn-danger" v-if="canCancel(reservation.startDate)" @click="cancelReservation(reservation.reservationId)">Cancel</button></td>
+          <td><button class="btn btn-danger" v-if="canCancel(reservation)" @click="cancelReservation(reservation.reservationId)">Cancel</button></td>
         </tr>
       </tbody>
     </table>
@@ -127,21 +127,30 @@ export default {
         }
       }
     },
-    canCancel(checkInDate) {
+    canCancel(reservation) {
       const now = new Date();
-      const checkIn = new Date(checkInDate);
-      console.log(typeof checkIn)
-      console.log(checkIn)
+      const checkIn = new Date(reservation.startDate);
       const diffTime = Math.abs(checkIn - now);
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      console.log(diffDays)
-      return diffDays >= 1;
+      return diffDays >= 1 && reservation.status === 'ACTIVE';
     },
-    cancelReservation(id) {
-      axios.put(`/api/reservations/${id}/cancel`)
-      .then(() => {
+    async cancelReservation(id) {
+      
+      try {
+        await axios.put(`/api/reservations/${id}/cancel`)
         this.getReservations();
-      });
+      } catch(error) {
+ 
+        if (error.response.status === 401) {
+            location.href = '/login';
+        } else if (error.response.status === 400 || error.response.status === 409) {
+          alert("It is not possible to cancel this reservation!")
+          return
+        }
+
+        console.error(error);
+      } 
+      
     }
   }
 }

@@ -7,7 +7,7 @@ import VueCardFormat from 'vue-credit-card-validation';
 import VuePaycard from "vue-paycard";
 import refreshTokenService from './refreshTokenService';
 
-axios.defaults.baseURL = 'http://localhost:8080'
+axios.defaults.baseURL = process.env.VUE_APP_BACKEND_URL || 'http://localhost:8080';
 
 // Add a request interceptor
 axios.interceptors.request.use(async config => {

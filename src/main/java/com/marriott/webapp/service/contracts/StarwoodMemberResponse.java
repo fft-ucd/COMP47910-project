@@ -1,12 +1,15 @@
-package com.marriott.webapp.service;
+package com.marriott.webapp.service.contracts;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class RegistrationRequest {
+@Builder
+public class StarwoodMemberResponse {
 
     @Data
-    public class Address {
+    @Builder
+    public static class Address {
         private String street;
         private String city;
         private String state;
@@ -15,18 +18,20 @@ public class RegistrationRequest {
     }
 
     @Data
-    public class Contact {
+    @Builder
+    public static class Contact {
         private String phone;
         private String email;
     }
 
+    private Long id;
+
     private String name;
     private String surname;
-    private Contact contact;
+
     private Address address;
 
-    private String username;
-    private String password;
+    private Contact contact;
 
-    // getters and setters
+    private String password;
 }

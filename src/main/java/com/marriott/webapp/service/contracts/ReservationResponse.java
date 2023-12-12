@@ -1,4 +1,4 @@
-package com.marriott.webapp.service;
+package com.marriott.webapp.service.contracts;
 
 import com.marriott.webapp.model.Reservation;
 import lombok.Builder;

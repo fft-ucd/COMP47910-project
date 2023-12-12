@@ -9,6 +9,7 @@ import com.marriott.webapp.model.ReservationRepository;
 import com.marriott.webapp.model.Room;
 import com.marriott.webapp.model.RoomRepository;
 import com.marriott.webapp.model.StarwoodMember;
+import com.marriott.webapp.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +32,7 @@ public class ReservationService {
     private final AESUtil aesUtil;
 
     @Transactional
-    public Reservation createReservation(final List<Long> roomIds,
+    public Reservation createReservation(final Set<Long> roomIds,
                                          final Guest guest,
                                          final LocalDate startDate,
                                          final LocalDate endDate,
@@ -46,10 +47,29 @@ public class ReservationService {
             throw new ClientErrorException("At least one room must be selected");
         }
 
-        final List<Room> rooms = roomRepository.findAllById(roomIds);
+        final List<Room> rooms = roomRepository.findAvailableRooms(startDate, endDate)
+                .stream()
+                .filter(room -> roomIds.contains(room.getId()))
+                .toList();
 
-        Optional<Guest> reservationGuest = userRepository.findByContactEmail(guest.getContact().getEmail())
-                .map(user -> guest.toBuilder().id(user.getId()).build());
+        if (rooms.size() != roomIds.size()) {
+            throw new ClientErrorException("Invalid room selection");
+        }
+
+        Optional<User> reservationGuest = userRepository.findByContactEmail(guest.getContact().getEmail())
+                .map(user -> {
+                    if (user.getType().equals(Guest.GUEST)) {
+                        var guestUser = (Guest) user;
+                        guestUser.setName(guest.getName());
+                        guestUser.setSurname(guest.getSurname());
+                        guestUser.setContact(guest.getContact());
+                        guestUser.setSurname(guest.getSurname());
+                        guestUser.setAddress(guest.getAddress());
+                        return guestUser;
+                    }
+
+                    return user;
+                });
 
         //CHECK IF THE USER IS A MEMBER
         if (reservationGuest.isPresent() && !reservationGuest.get().getType().equals(Guest.GUEST)) {
@@ -58,7 +78,6 @@ public class ReservationService {
 
         if (reservationGuest.isEmpty()) {
             //CHECK IF IT IS A NEW USER
-            guest.setInactive(false);
             final var user = userRepository.save(guest);
             reservationGuest = Optional.of(user);
         } else {
@@ -90,7 +109,7 @@ public class ReservationService {
     @Transactional
     public void cancelReservation(final Long reservationId) {
         final Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid reservation id"));
+                .orElseThrow(() -> new ClientErrorException("Invalid reservation id"));
 
         if (reservation.getStatus() != ReservationStatus.ACTIVE) {
             throw new SystemConflictException("Cannot cancel a reservation that is not active");

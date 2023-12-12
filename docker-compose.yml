@@ -1,26 +1,68 @@
 version: '3.3'
 
 services:
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VUE_APP_BACKEND_URL: http://backend:8080
+      dockerfile: Dockerfile
+    image: frontend:latest
+    ports:
+      - 8081:80
+    restart: always
+    networks:
+      - app-network
   db:
     image: mysql:5.7
     restart: always
     environment:
       MYSQL_DATABASE: 'db'
       # So you don't have to use root, but you can if you like
-      # MYSQL_USER: 'root'
+      MYSQL_USER: 'myappuser'
+      MYSQL_PASSWORD: 'myappuser'
       # You can use whatever password you like
-      # MYSQL_PASSWORD: 'root'
+
       # Password for root access
       MYSQL_ROOT_PASSWORD: 'root'
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 3m
+      retries: 10
     ports:
-      # <Port exposed> : <MySQL Port running inside container>
       - '3306:3306'
     expose:
       # Opens port 3306 on the container
       - '3306'
       # Where our data will be persisted
+    networks:
+      - app-network
     volumes:
       - my-db:/var/lib/mysql
-# Names our volume
+  backend:
+    build:
+      context: ./  # assuming Dockerfile is in the root directory of your project
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    image: backend:latest
+    volumes:
+      - gradle-cache:/home/gradle/.gradle/
+    environment:
+      CORS_ALLOWED_ORIGINS: http://localhost:8081
+      SPRING_DATASOURCE_USERNAME: myappuser
+      SPRING_DATASOURCE_PASSWORD: myappuser
+      MYSQL_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+
 volumes:
   my-db:
+  gradle-cache:
+networks:
+  app-network:
+    driver: bridge

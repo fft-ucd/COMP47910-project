@@ -1,10 +1,10 @@
 package com.marriott.webapp.api;
 
 import com.marriott.webapp.model.Reservation;
-import com.marriott.webapp.service.ReservationRequest;
-import com.marriott.webapp.service.ReservationResponse;
+import com.marriott.webapp.service.contracts.ReservationRequest;
+import com.marriott.webapp.service.contracts.ReservationResponse;
 import com.marriott.webapp.service.ReservationService;
-import com.marriott.webapp.service.ReservationsRequest;
+import com.marriott.webapp.service.contracts.ReservationsRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

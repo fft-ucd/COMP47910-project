@@ -11,10 +11,10 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DiscriminatorValue(value = Guest.GUEST)
 public class Guest extends User {
+
     public static final String GUEST = "guest";
 
     // getters and setters
-
 
     @Override
     public String getType() {
